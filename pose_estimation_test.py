@@ -64,6 +64,50 @@ def findChessboard():
 """
 
 
+def objectTracking():
+    video_capture = cv.VideoCapture(0) 
+
+    if not video_capture.isOpened():
+        print("Error: Could not open video.")
+        return
+
+    # Read the first frame
+    ret, frame = video_capture.read()
+    if not ret:
+        print("Error: Could not read frame.")
+        return
+
+    bbox = cv.selectROI("Tracking", frame, False)
+
+    tracker = cv.TrackerCSRT_create()
+
+    tracker.init(frame, bbox)
+
+    while True:
+        ret, frame = video_capture.read()
+        if not ret:
+            print("Error: Could not read frame.")
+            break
+
+        ret, bbox = tracker.update(frame)
+
+        if ret:
+            p1 = (int(bbox[0]), int(bbox[1]))
+            p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+            cv.rectangle(frame, p1, p2, (0, 255, 0), 2, 1)
+        else:
+            cv.putText(frame, "Tracking failure detected", (100, 80),
+                        cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
+
+        cv.imshow('tracking', frame)
+        if cv.waitKey(1) & 0xFF == 27:
+            break
+
+    video_capture.release()
+    cv.destroyAllWindows()
+
+
+
 def cameraCalibration():
     # termination criteria
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -124,4 +168,5 @@ def printImgArr(img):
 
 ####    MAIN    ####
 # printImgArr('image.png')
-findChessboard()
+#findChessboard()
+objectTracking()
